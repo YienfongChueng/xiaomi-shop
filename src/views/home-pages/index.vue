@@ -293,6 +293,8 @@ export default {
         addCart (id) {
             this.$api.Cart.addCart(id)
                 .then(res => {
+                    // todo vuex
+                    console.log(res);
                     if (res.status === 0) {
                         this.showModal = true;
                     }

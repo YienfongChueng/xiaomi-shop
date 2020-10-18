@@ -14,14 +14,14 @@ export default {
     methods: {
         getUser () {
             this.$api.User.getUserInfo()
-                .then(res => {
+                .then((res = {}) => {
                     // todo vuex
                     this.$store.dispatch('saveUserName', res.username);
                 });
         },
         getCartCount () {
             this.$api.Cart.getCartSum()
-                .then(res => {
+                .then((res = 0) => {
                 // todo vuex
                     this.$store.dispatch('saveCartCount', res);
                 });

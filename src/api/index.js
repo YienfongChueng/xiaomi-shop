@@ -11,6 +11,9 @@ export const Product = {
             },
         });
     },
+    getProductDetails (id) {
+        return Axios.get(`/products/${id}`);
+    },
 };
 
 export const User = {
