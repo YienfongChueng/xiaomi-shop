@@ -1,6 +1,6 @@
 <template>
     <div class="detail">
-        <product-param></product-param>
+        <product-param :title="product.name"></product-param>
         <div class="content">
             <div class="container clearfix">
                 <div class="swiper-item fl">
@@ -13,49 +13,52 @@
                     </swiper>
                 </div>
                 <div class="info-item fr">
-                    <h2 class="title">小米8</h2>
-                    <p class="desc">相机全新升级 / 960帧超慢动作 / 手持超级夜景 / 全球首款双频GPS / 骁龙845处理器 / 红外人脸解锁 / AI变焦双摄 / 三星 AMOLED 屏</p>
+                    <h2 class="title">{{product.name}}</h2>
+                    <p class="desc">{{product.subtitle}}</p>
                     <div class="selleWay">小米自营</div>
                     <div class="price">
-                        <span class="new-price">5599元</span>
-                        <span class="old-price">4599元</span>
+                        <span class="new-price">{{product.price | currency}}</span>
+                        <span class="old-price">{{product.price - 99 | currency}}</span>
                     </div>
                     <div class="line"></div>
                     <div class="address-box">
                         <span class="icon-loc"></span>
                         <span class="addr">广东省 广州市 天河区 元岗街道</span>
                         <a href="javascript:;" class="modify">修改</a>
-                        <div class="status">有现货</div>
+                        <div class="status" v-if="product.stock > 0">有现货</div>
+                        <div class="status zero" v-if="product.stock <= 0">缺货</div>
                     </div>
-                    <div class="color-box">
+                    <div class="attribute-box">
                         <p class="">选择颜色</p>
-                        <div class="color-list">
-                            <div class="color-item">陶瓷黑</div>
-                            <div class="color-item">透明版</div>
-                            <div class="color-item">亮银版</div>
+                        <div class="attribute-list">
+                            <div
+                                v-for="(item,index) in colorsAttr"
+                                :key="index" class="attribute-item"
+                                :class="{'check': item.type === version}">{{item.name}}</div>
                         </div>
                     </div>
-                    <div class="version-box">
+                    <div class="attribute-box">
                         <p class="">选择版本</p>
-                        <div class="version-list">
-                            <div class="version-item">8GB+256GB</div>
-                            <div class="version-item">8GB+128GB</div>
-                            <div class="version-item">12GB+256GB</div>
-                            <div class="version-item">16GB+512GB</div>
+                        <div class="attribute-list">
+                            <div class="attribute-item"
+                                v-for="(item,index) in versionsAttr"
+                                :key="index"
+                                :class="{'check': item.type === version}"
+                                @click="version = item.type">{{item.name}}</div>
                         </div>
                     </div>
                     <div class="choose-box">
-                        <p class="">
-                            <span class="">小米8 6GB+64GB 全网通 深灰色</span>
-                            <span class="price">5599元</span>
+                        <p class="clearfix">
+                            <span class="attr fl">{{product.name}} {{userSelected}}</span>
+                            <span class="price fr">{{totalPrice | currency}}</span>
                         </p>
                         <div class="total">
-                            总计：5599元
+                            总计：{{totalPrice | currency}}
                         </div>
                     </div>
-                    <div class="btn-box">
-                        <a href="javascript:;" class="cart">加入购物车</a>
-                        <a href="javascript:;" class="favor">喜欢</a>
+                    <div class="btn-box btn-group">
+                        <a href="javascript:;" @click="addCart" class="cart btn btn-huge">加入购物车</a>
+                        <a href="javascript:;" class="favor btn btn-middle btn-default">喜欢</a>
                     </div>
                 </div>
             </div>
@@ -85,6 +88,26 @@ export default {
     },
     data () {
         return {
+            id: this.$route.params.id,
+            version: 1,
+            product: {},
+            colorsAttr: [
+                { type: 1, name: '陶瓷黑' },
+                { type: 2, name: '透明版' },
+                { type: 3, name: '亮银版' },
+            ],
+            versionsAttr: [
+                { type: 1, name: '8GB+256GB 全网通' },
+                { type: 2, name: '8GB+128GB 移动' },
+                { type: 3, name: '12GB+256GB 联通' },
+                { type: 4, name: '16GB+512GB 全网通' },
+            ],
+            versionwidthColorAttr: [
+                { type: 1, name: '8GB+256GB 全网通 陶瓷黑', price: 1230 },
+                { type: 2, name: '8GB+128GB 移动 透明版', price: 2378 },
+                { type: 3, name: '12GB+256GB 联通 亮银版', price: 1456 },
+                { type: 4, name: '16GB+512GB 全网通', price: 999 },
+            ],
             swiperOptions: {
                 autoplay: true,
                 loop: true,
@@ -94,6 +117,42 @@ export default {
                 },
             },
         };
+    },
+    computed: {
+        userSelected () {
+            for (const item of this.versionwidthColorAttr) {
+                if (item.type === this.version) {
+                    return item.name;
+                }
+            }
+            return '';
+        },
+        totalPrice () {
+            for (const item of this.versionwidthColorAttr) {
+                if (item.type === this.version) {
+                    return item.price;
+                }
+            }
+            return '';
+        },
+    },
+    methods: {
+        getProductDetail () {
+            this.$api.Product.getProductDetails(this.id)
+                .then(res => {
+                    this.product = res;
+                });
+        },
+        addCart () {
+            this.$api.Cart.addCart({ productId: this.id }).then(res => {
+                console.log(res);
+                this.$store.dispatch('saveCartCount', res.cartTotalQuantity);
+                this.$router.push('/cart');
+            });
+        },
+    },
+    mounted () {
+        this.getProductDetail();
     },
 };
 </script>
@@ -178,6 +237,63 @@ export default {
                     margin-top: 15px;
                     margin-left: 64px;
                 }
+                .zero {
+                    color: #f00;
+                }
+            }
+            .attribute-box {
+                color: #343434;
+                p {
+                    font-size: 18px;
+                    margin-top: 30px;
+                    margin-bottom: 10px;
+                }
+                .attribute-list {
+                    font-size: 16px;
+                    .attribute-item {
+                        display: inline-block;
+                        width: 287px;
+                        height: 50px;
+                        line-height: 50px;
+                        text-align: center;
+                        margin-right: 10px;
+                        margin-top: 10px;
+                        border: 1px solid #E5E5E5;
+                        box-sizing: border-box;
+                        cursor: pointer;
+                        &:nth-child(even) {
+                            margin-right: 0;
+                        }
+                    }
+                    .check {
+                        border-color:#FF6600;
+                        color: #FF6600;
+                    }
+                }
+
+            }
+            .choose-box {
+                width: 584px;
+                height: 108px;
+                box-sizing: border-box;
+                background-color: #FAFAFA;
+                margin-top: 50px;
+                padding: 24px 33px 24px 30px;
+                p {
+                    color: #343434;
+                    font-size: 14px;
+
+                }
+                .total {
+                    color: #FF6700;
+                    font-size: 24px;
+                    margin-top: 18px;
+                }
+
+            }
+            .btn-box {
+                margin-top: 50px;
+                margin-bottom: 50px;
             }
         }
     }

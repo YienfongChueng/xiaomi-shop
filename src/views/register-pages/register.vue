@@ -51,6 +51,7 @@ export default {
             };
             this.$api.User.register(userInfos)
                 .then(res => {
+                    this.$message.success('注册成功');
                     this.$router.push('/login');
                 });
         },

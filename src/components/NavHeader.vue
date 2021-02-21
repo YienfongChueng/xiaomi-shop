@@ -10,9 +10,10 @@
                 </div>
                 <div class="topbar-user">
                     <a href="javascript:;" class="topbar-link" v-if="!username" @click="gotoLogin">登陆</a>
+                    <a href="javascript:;" class="topbar-link" v-if="username" @click="logOut">退出</a>
                     <a href="javascript:;" class="topbar-link" v-if="username">{{username}}</a>
-                    <a href="javascript:;" class="topbar-link" v-if="username">我的订单</a>
-                    <a href="javascript:;" class="topbar-link my-cart"><i class="icon-cart"></i>购物车({{cartCount}})</a>
+                    <a href="javascript:;" class="topbar-link" v-if="username" @click="gotoOrderList">我的订单</a>
+                    <a href="javascript:;" class="topbar-link my-cart" @click="gotoCart"><i class="icon-cart"></i>购物车({{cartCount}})</a>
                 </div>
             </div>
         </div>
@@ -121,9 +122,36 @@ export default {
         gotoLogin () {
             this.$router.push('/login');
         },
+        logOut () {
+            this.$api.User.logout().then(res => {
+                this.$message.success('退出成功');
+                this.$cookie.set('userId', '', { expires: '-1' });
+                this.$store.dispatch('saveUserName', '');
+                this.$store.dispatch('saveCartCount', '0');
+            });
+        },
+        getCartCount () {
+            this.$api.Cart.getCartSum()
+                .then((res = 0) => {
+                    this.$store.dispatch('saveCartCount', res);
+                });
+        },
+        gotoOrderList () {
+            this.$router.push({
+                name: 'OrderList',
+            });
+        },
+        gotoCart () {
+            this.$router.push({
+                name: 'Cart',
+            });
+        },
     },
-    created () {
+    mounted () {
         this.getProductList();
+        if (this.$route.params && this.$route.params.from === 'login') {
+            this.getCartCount();
+        }
     },
 };
 </script>
@@ -170,29 +198,29 @@ export default {
                 height: 119px;
                 @include flex();
                 position: relative;
-                .header-logo {
-                    width: 55px;
-                    height: 55px;
-                    background-color: #FF6600;
-                    a {
-                        display: inline-block;
-                        width: 110px;
-                        height: 55px;
-                        &::before {
-                            content: ' ';
-                            @include bgImg(55px,55px,'/imgs/mi-logo.png');
-                            transition: margin .2s;
-                        }
-                        &::after {
-                            content: ' ';
-                            @include bgImg(55px,55px,'/imgs/mi-home.png');
-                        }
-                        &:hover::before {
-                            margin-left: -55px;
-                            transition: margin .2s;
-                        }
-                    }
-                }
+                // .header-logo {
+                //     width: 55px;
+                //     height: 55px;
+                //     background-color: #FF6600;
+                //     a {
+                //         display: inline-block;
+                //         width: 110px;
+                //         height: 55px;
+                //         &::before {
+                //             content: ' ';
+                //             @include bgImg(55px,55px,'/imgs/mi-logo.png');
+                //             transition: margin .2s;
+                //         }
+                //         &::after {
+                //             content: ' ';
+                //             @include bgImg(55px,55px,'/imgs/mi-home.png');
+                //         }
+                //         &:hover::before {
+                //             margin-left: -55px;
+                //             transition: margin .2s;
+                //         }
+                //     }
+                // }
                 .header-menu {
                     flex: 1 1 auto;
                     padding-left: 209px;

@@ -4,6 +4,13 @@ module.exports = {
         host: 'localhost',
         port: 8080,
         proxy: {
+            '/api/mock': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                pathRewrite: {
+                    '^/api/mock': '',
+                },
+            },
             '/api': {
                 target: 'http://mall-pre.springboot.cn',
                 changeOrigin: true,

@@ -291,13 +291,12 @@ export default {
                 });
         },
         addCart (id) {
-            this.$api.Cart.addCart(id)
+            this.$api.Cart.addCart({ productId: id })
                 .then(res => {
-                    // todo vuex
-                    console.log(res);
-                    if (res.status === 0) {
-                        this.showModal = true;
-                    }
+                    this.showModal = true;
+                    this.$store.dispatch('saveCartCount', res.cartTotalQuantity);
+                }).catch(() => {
+                    this.showModal = false;
                 });
         },
         closeDialog () {

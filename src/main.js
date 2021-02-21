@@ -5,6 +5,7 @@ import store from './store';
 import axios from 'axios';
 import VueLazyload from 'vue-lazyload';
 import VueCookie from 'vue-cookie';
+import { Message } from 'element-ui';
 import * as Filters from './filters';
 import * as Api from './api';
 import * as Utils from './utils';
@@ -25,11 +26,11 @@ axios.interceptors.response.use(function (response) {
         }
         return Promise.reject(res);
     } else if (res.status === 1) {
-        alert(res.msg);
+        Message.warning(res.msg);
         return Promise.reject(res);
     }
 }, function (error) {
-    alert(error);
+    Message.error(error);
     return Promise.reject(error);
 });
 
@@ -37,6 +38,8 @@ Vue.prototype.$api = Api;
 window.Api = Api;
 Vue.prototype.$utils = Utils;
 window.Utils = Utils;
+
+Vue.prototype.$message = Message;
 
 Object.keys(Filters).forEach(key => {
     Vue.filter(key, Filters[key]);

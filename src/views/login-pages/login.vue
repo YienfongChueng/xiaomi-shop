@@ -71,10 +71,14 @@ export default {
             const { username, password } = this;
             this.$api.User.login({ username, password })
                 .then(res => {
-                    this.$cookie.set('userId', res.id, { expires: '1M' });
-                    // TODO vuex
+                    this.$cookie.set('userId', res.id, { expires: 'Session' });
                     this.$store.dispatch('saveUserName', res.username);
-                    this.$router.push('/index');
+                    this.$router.push({
+                        name: 'Index',
+                        params: {
+                            from: 'login',
+                        },
+                    });
                 });
         },
 
