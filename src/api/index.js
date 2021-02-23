@@ -97,10 +97,12 @@ export const Order = {
     createOrder (shippingId) {
         return Axios.post('/orders', shippingId);
     },
-    getOrderList (pageSize = 10, pageNum = 1) {
+    getOrderList ({ pageSize = 10, pageNum = 1 } = {}) {
         return Axios.get('/orders', {
-            pageSize,
-            pageNum,
+            params: {
+                pageNum,
+                pageSize,
+            },
         });
     },
     getOrderDetail (orderNo) {

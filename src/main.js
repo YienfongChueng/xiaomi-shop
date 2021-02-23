@@ -30,7 +30,8 @@ axios.interceptors.response.use(function (response) {
         return Promise.reject(res);
     }
 }, function (error) {
-    Message.error(error);
+    const res = error.response;
+    Message.error(res.data.message);
     return Promise.reject(error);
 });
 

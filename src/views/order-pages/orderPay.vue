@@ -1,5 +1,10 @@
 <template>
   <div class="orderPay">
+    <order-header title="订单支付">
+      <template v-slot:tip>
+        <span>请谨防钓鱼链接或诈骗电话，了解更多</span>
+      </template>
+    </order-header>
     <div class="wrapper">
       <div class="container">
         <div class="order-wrap">
@@ -50,37 +55,52 @@
         </div>
       </div>
     </div>
-    <!-- <scan-pay-code v-if="showPay"></scan-pay-code> -->
+    <scan-pay-code
+      v-if="showPay"
+      :qrcodeUrl="qrcodeUrl"
+      @close="closePayModal">
+    </scan-pay-code>
+    <modal
+      title="支付确认"
+      btnType="3"
+      sureText="查看订单列表"
+      cancelText="未完成支付"
+      :showModal="showPayModal"
+      @cancel="showPayModal = false"
+      @submit="gotoOrderList">
+        <template v-slot:body>
+          <p>您是否已经完成支付？</p>
+        </template>
+    </modal>
   </div>
 </template>
 <script>
-// import ScanPayCode from './../components/ScanPayCode';
+import QRCode from 'qrcode';
+import ScanPayCode from '@/components/ScanPayCode';
+import Modal from '@/components/Modal.vue';
+import OrderHeader from '@/components/OrderHeader';
 export default {
     name: 'orderPay',
     data () {
         return {
             showDetail: false, // 是否显示订单详情
             showPay: false, // 是否显示微信支付弹框
+            showPayModal: false, // 二次支付确认弹框
             orderNo: this.$route.query.orderNo,
             addrInfo: '',
             orderDetail: [],
             payment: 0,
             payType: '',
+            T: '', // 定时器,
+            qrcodeUrl: '',
         };
     },
     components: {
-        // ScanPayCode,
+        ScanPayCode,
+        Modal,
+        OrderHeader,
     },
     methods: {
-    // 关闭微信弹框
-        closePayModal () {
-            this.showPay = false;
-            this.showPayModal = true;
-            clearInterval(this.T);
-        },
-        goOrderList () {
-            this.$router.push('/order/list');
-        },
         getOrders () {
             if (this.orderNo) {
                 this.$api.Order.getOrderDetail(this.orderNo).then(res => {
@@ -95,7 +115,52 @@ export default {
             this.payType = payType;
             if (payType === 1) {
                 window.open(`/#/order/aliPay?orderId=${this.orderNo}`, '_blank');
+            } else if (payType === 2) {
+                this.wechatPay();
             }
+        },
+        wechatPay () {
+            const params = {
+                orderId: this.orderNo,
+                orderName: '高仿小米商城学习', // 扫码支付时订单名称
+                amount: 0.01, // 单位元
+                payType: 2, // 1支付宝，2微信
+            };
+            this.$api.Pay.pay(params).then(res => {
+                // With promises
+                QRCode.toDataURL(res.content)
+                    .then(url => {
+                        console.log(url);
+                        this.showPay = true;
+                        this.qrcodeUrl = url;
+                        this.T = setInterval(() => {
+                            this.getOrderById();
+                        }, 1000);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        this.$message.error('微信支付生成二维码失败，请稍后再重试');
+                    });
+            });
+        },
+        // 关闭微信弹框
+        closePayModal () {
+            this.showPay = false;
+            this.showPayModal = true;
+            clearInterval(this.T);
+        },
+        // 查询订单状态，当已支付后，关闭二维码弹窗并跳转到订单列表页
+        getOrderById () {
+            this.$api.Order.getOrderDetail(this.orderNo).then(res => {
+                if (res.status === 20) {
+                    this.showPay = false;
+                    clearInterval(this.T);
+                    this.gotoOrderList();
+                }
+            });
+        },
+        gotoOrderList () {
+            this.$router.push({ name: 'OrderList' });
         },
     },
     mounted () {

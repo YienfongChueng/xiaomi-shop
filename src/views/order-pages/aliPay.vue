@@ -1,15 +1,22 @@
 <template>
     <div class="alipay">
+        <order-header title="订单列表">
+            <template v-slot:tip>
+                <span>请谨防钓鱼链接或诈骗电话，了解更多></span>
+            </template>
+        </order-header>
         <loading v-if="loading"></loading>
         <div class="content" v-html="content"></div>
     </div>
 </template>
 <script>
 import Loading from '@/components/Loading.vue';
+import OrderHeader from '@/components/OrderHeader';
 export default {
     name: 'AliPay',
     components: {
         Loading,
+        OrderHeader,
     },
     data () {
         return {
