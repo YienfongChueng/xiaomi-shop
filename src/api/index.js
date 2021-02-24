@@ -1,7 +1,14 @@
 import Axios from 'axios';
+
+const areaAxios = Axios.create();
+
 export const Area = {
     getAreas () {
-        return Axios.get('/mock/area.json');
+        return areaAxios.get('/area.json').then(res => {
+            return res.data.data;
+        }).catch(err => {
+            console.log(err);
+        });
     },
 };
 // 产品

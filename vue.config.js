@@ -4,13 +4,6 @@ module.exports = {
         host: 'localhost',
         port: 8080,
         proxy: {
-            '/api/mock': {
-                target: 'http://localhost:8080',
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/api/mock': '',
-                },
-            },
             '/api': {
                 target: 'http://mall-pre.springboot.cn',
                 changeOrigin: true,
@@ -33,5 +26,10 @@ module.exports = {
                 '@api': path.resolve(__dirname, './src/api'),
             },
         },
+    },
+    productionSourceMap: false,
+    chainWebpack: config => {
+        // 移除prefetch插件
+        config.plugins.delete('prefetch');
     },
 };
